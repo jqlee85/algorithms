@@ -53,6 +53,7 @@ def collapseRandomEdge(graph,seed):
     while i <= len(removedNode):
         if (removedNode[i] not in graph[randomNodeIndexA]):
             graph[randomNodeIndexA].push(removedNode[i])
+            # TODO find row of removedNode[i] and add randomNodeIndexA to it if not already there
 
     return graph
 
