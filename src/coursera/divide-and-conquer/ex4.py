@@ -26,11 +26,35 @@ Returns:
     finalCut: (list) of the final 2 vertices, ex: [1,3]
 
 """
-def randomContraction(graph):
+def randomContraction(graph,seed=0):
 
-    finalCut = null
-    return finalCut
+    if (len(graph) == 2): # base case
+        return getNumCrossing(graph)
+    else: # remove random edge and collapse
+        newGraph = collapseRandomEdge(graph,seed)
+        return randomContraction(newGraph,seed)
+    
 
+def getNumCrossing(graph):
+    return len(graph[0])
+
+def collapseRandomEdge(graph,seed):
+    random.seed(seed)
+    randomNodeIndexA = random.randrange(0,len(graph),seed)
+    randomNodeIndexB = random.randRange(0,len(graph[randomNodeIndexA]),seed)
+    nodeB = graph[randomNodeIndexB] 
+    nodeBIndex = getNodeBIndex(graph)
+    removedNode = graph.pop(nodeBIndex)
+
+    if (nodeBIndex < randomNodeIndexA):
+        randomNodeIndexA -= 1
+    
+    i = 1
+    while i <= len(removedNode):
+        if (removedNode[i] not in graph[randomNodeIndexA]):
+            graph[randomNodeIndexA].push(removedNode[i])
+
+    return graph
 
 """
 Runs the randomContraction algorithm on an undirected graph n^2 times and returns the minimum number of cuts found
@@ -99,7 +123,7 @@ class getMinCut(unittest.TestCase):
   def testGetGraphFromAdjacencyList(self):
     expectedGraph = {
         vertices: [1,2,3,4,5,6,7,8],
-        edges: []
+        edges: [[]]
     }
     expectedMinCuts = 1
     self.assertEqual(getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt'),[expectedGraph,expectedMinCuts])
