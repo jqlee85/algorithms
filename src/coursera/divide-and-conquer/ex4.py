@@ -60,5 +60,52 @@ def getMinCut(graph):
 
     return minCuts    
     
+"""
+Takes a text file of an adjacency list in columns and returns an undirected graph representation consisting of V (a list of vertices) and E (a list of edges) ex: {vertices: [1,2,3,4], edges: [[1,2],[1,4],[2,3],[3,4]]}
+
+Args:
+    graph: (string) The location of the .txt file containing the adjacency list
+
+Returns:
+    graph: (list) The graph representation
+    minCuts: (int or null) The expected number of mincuts (if applicable)
+
+"""
+def getGraphFromAdjacencyList(adjacencyListLocation):
+
+    # Read in data from txt file
+    text_file = open(adjacencyListLocation, "rt")
+    graph = [[item for item in line.split()] for line in text_file.readlines()]
+    
+    # Check for initial row with expected minCuts
+    if (graph[0][0] == '#'):
+        minCuts = graph[0][1]
+        graph.pop(0)
+    else:
+        minCuts = null
+    
+    # Convert to ints
+    for row,i in graph:
+        for item,j in row:
+            graph[i][j] = int(graph[i][j])
+ 
+    return [graph,minCuts]
+
+# graph = getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt')
+# print(graph)
+
+class getMinCut(unittest.TestCase):
+  
+  def testGetGraphFromAdjacencyList(self):
+    expectedGraph = {
+        vertices: [1,2,3,4,5,6,7,8],
+        edges: []
+    }
+    expectedMinCuts = 1
+    self.assertEqual(getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt'),[expectedGraph,expectedMinCuts])
+
+theTest = getMinCut()
+theTest.testGetGraphFromAdjacencyList()
+
 
 
