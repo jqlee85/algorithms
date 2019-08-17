@@ -95,7 +95,7 @@ Returns:
     graph: (list) The graph representation
 
 """
-def getGraphFromAdjacencyList(adjacencyListLocation):
+def getGraph(adjacencyListLocation):
 
     # Read in data from txt file
     text_file = open(adjacencyListLocation, "rt")
@@ -108,9 +108,14 @@ def getGraphFromAdjacencyList(adjacencyListLocation):
         minCuts = null
     
     # Convert to ints
-    for row,i in graph:
-        for item,j in row:
+    i = 0
+    while i < len(graph):
+        row = graph[i]
+        j = 0
+        while j < len(row):
             graph[i][j] = int(graph[i][j])
+            j += 1
+        i += 1
  
     return graph
 
@@ -119,22 +124,31 @@ def getGraphFromAdjacencyList(adjacencyListLocation):
 
 class TestMinCut(unittest.TestCase):
   
-  def test(self):
-    expectedGraph = [
-        [[1],[2],[3],[4]],
-        [[2],[1],[3],[4]],
-        [[3],[1],[2],[4]],
-        [[4],[1],[2],[3],[5]],
-        [[5],[4],[6],[7],[8]],
-        [[6],[5],[7],[8]],
-        [[7],[5],[6],[8]],
-        [[8],[5],[6],[7]]
-    ]
-    expectedMinCuts = 1
-    self.assertEqual(getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt'),expectedGraph)
+    def runTest(self):
+        testGetGraph (self)
 
-theTest = TestMinCut()
-theTest.test()
+    def getNumCrossing(self)
+        expectedNum = 3
+        
 
+    def testGetGraph(self):
+        expectedGraph = [
+            [1,2,3,4],
+            [2,1,3,4],
+            [3,1,2,4],
+            [4,1,2,3,5],
+            [5,4,6,7,8],
+            [6,5,7,8],
+            [7,5,6,8],
+            [8,5,6,7]
+        ]
+        expectedMinCuts = 1
+        self.assertEqual(getGraph('./ex4testcases/ex4test1.txt'),expectedGraph)
+
+# theTest = TestMinCut()
+# theTest.test()
+
+suite = unittest.TestLoader().loadTestsFromModule (TestMinCut())
+unittest.TextTestRunner().run(suite)
 
 
