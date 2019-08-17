@@ -19,8 +19,8 @@ import sys
 Performs a uniformly random contraction algorithm to get a final cut represented by 2 vertices
 
 Args:
-    graph: (list) An undirected graph representation consisting of V (a list of vertices) and E (a list of edges) ex: {vertices: [1,2,3,4], edges: [[1,2],[1,4],[2,3],[3,4]]}
-    randomSeed: (int) The random seed used for selecting edges to collapse
+    graph: (list) An undirected graph representation, a list of lists, with the first element of each being the vertex, and the subsequent elements being references to the vertexes to which the vertex is connected
+    seed: (int) The random seed used for selecting edges to collapse
 
 Returns:
     finalCut: (list) of the final 2 vertices, ex: [1,3]
@@ -34,27 +34,77 @@ def randomContraction(graph,seed=0):
         newGraph = collapseRandomEdge(graph,seed)
         return randomContraction(newGraph,seed)
     
+"""
+Performs a uniformly random contraction algorithm to get a final cut represented by 2 vertices
 
-def getNumCrossing(graph):
-    return len(graph[0])
+Args:
+    collapsedGraph: (list) An undirected graph representation of a collapsed graph with two nodes
 
-def collapseRandomEdge(graph,seed):
-    random.seed(seed)
-    randomNodeIndexA = random.randrange(0,len(graph),seed)
-    randomNodeIndexB = random.randRange(0,len(graph[randomNodeIndexA]),seed)
-    nodeB = graph[randomNodeIndexB] 
-    nodeBIndex = getNodeBIndex(graph)
-    removedNode = graph.pop(nodeBIndex)
+Returns:
+    (int) The number of crossing edges of a 2 node graph
 
-    if (nodeBIndex < randomNodeIndexA):
-        randomNodeIndexA -= 1
+"""
+def getNumCrossing(collapsedGraph):
+    return len(collapsedGraph[0]) - 1
+
+"""
+Selects a random edge from a graph, and collapses the two nodes into one remaining node
+
+Args:
+    graph: (list) An undirected graph representation, a list of lists, with the first element of each being the vertex, and the subsequent elements being references to the vertexes to which the vertex is connected
+    seed: (int) The random seed used for selecting edges to collapse
+    forceValues: (list) A list of two ints to be used to override random values when selecting and edge (only used for testing)
+
+Returns:
+    graph: (list) The resulting graph after the edge has been collapsed
+
+"""
+def collapseRandomEdge(graph,seed=0,forceValues=False):
     
-    i = 1
-    while i <= len(removedNode):
-        if (removedNode[i] not in graph[randomNodeIndexA]):
-            graph[randomNodeIndexA].push(removedNode[i])
-            # TODO find row of removedNode[i] and add randomNodeIndexA to it if not already there
+    # Get random edge by randomly selecting a nodes, then randomly selecting a connected nodes from that list
+    # Note: This isn't actually uniformly random, bc when picking the first node, a node with 1 edge is just as likely to be selected as a node with many edges
+    # Thus, some edges are more likely than others to be selected by this method
+    # TODO: Fix this to utilize weighted sampling of the first node
+    random.seed(seed)
+    nodeAIndex = random.randrange(0,len(graph))
+    randomNodeIndexB = random.randrange(1,len(graph[nodeAIndex]))
+    
+    # Force Values for testing
+    if (forceValues):
+        nodeAIndex = forceValues[0]
+        randomNodeIndexB = forceValues[1]
+    vertexB = graph[nodeAIndex][randomNodeIndexB]
+    nodeBIndex = getNodeIndex(graph,vertexB)
+    nodeB = graph[nodeBIndex] 
 
+    #----- BEGIN Fuse two nodes into single node -----#
+    removedNode = graph.pop(nodeBIndex)
+    if (nodeBIndex < nodeAIndex):
+        nodeAIndex -= 1
+    nodeA = graph[nodeAIndex]
+    vertexA = nodeA[0]
+    
+    # Remove reference to deleted node in nodeA
+    nodeA.remove(vertexB)
+    
+    # Loop through edges in removedNode and add to nodeA, while changing references in the connected nodes (nodeC) to point to nodeA
+    i = 1
+    while i < len(removedNode):
+        # Get other end of edge from removed node
+        vertexC = removedNode[i]
+        nodeC = graph[getNodeIndex(graph,vertexC)]
+        # Add vertexes to nodeA
+        if (vertexC not in nodeA):
+            nodeA.append(vertexC)
+        # Remove reference to deleted node in nodeC
+        if (vertexB in nodeC):
+            nodeC.remove(vertexB)
+        # Add reference to remaining node in nodeC 
+        if (vertexA not in nodeC):
+            nodeC.append(vertexA)
+        i += 1       
+     #----- /END Fuse two nodes into single node -----#
+    
     return graph
 
 """
@@ -73,7 +123,7 @@ def getMinCut(graph):
     m = len(graph.edges)
     numIterations = n ** 2
     minCuts = m
-    minCut = null
+    minCut = None
 
     i = 1
     while (i <= numIterations):
@@ -105,7 +155,7 @@ def getGraph(adjacencyListLocation):
     if (graph[0][0] == '#'):
         graph.pop(0)
     else:
-        minCuts = null
+        minCuts = None
     
     # Convert to ints
     i = 0
@@ -119,17 +169,48 @@ def getGraph(adjacencyListLocation):
  
     return graph
 
-# graph = getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt')
-# print(graph)
+
+
+"""
+Gets index of the given vertex given in the graph adjacency list representation
+
+Args:
+    graph: (list) the list of lists representing the adjacency list of the graph
+
+Returns:
+    index: (int) The index of the list whose first value is the vertex
+
+"""
+def getNodeIndex(graph,vertexToFind):
+    for i in range(0,len(graph)):
+        if (graph[i][0] == vertexToFind):
+            return i
+    return None
+
 
 class TestMinCut(unittest.TestCase):
   
     def runTest(self):
         testGetGraph (self)
+        testGetNodeIndex (self)
 
-    def getNumCrossing(self)
-        expectedNum = 3
-        
+    def testGetNumCrossing(self):
+        graphInput = [
+            [1,2,3,4,5,6],
+            [6,1,2,3,4,5]
+        ]
+        self.assertEqual(getNumCrossing(graphInput),5)
+
+    def testGetNodeIndex(self):
+        graphInput = [
+            [2,5,6],
+            [1,4,6],
+            [7,8],
+            [10,2,6],
+            [2,5,2]
+        ]
+        self.assertEqual(getNodeIndex(graphInput,7),2)
+        self.assertEqual(getNodeIndex(graphInput,9),None)
 
     def testGetGraph(self):
         expectedGraph = [
@@ -145,10 +226,33 @@ class TestMinCut(unittest.TestCase):
         expectedMinCuts = 1
         self.assertEqual(getGraph('./ex4testcases/ex4test1.txt'),expectedGraph)
 
-# theTest = TestMinCut()
-# theTest.test()
+    def testCollapseRandomEdge(self):
+        initialGraph = [
+            [1,2,3,4],
+            [2,1,3,4],
+            [3,1,2,4],
+            [4,1,2,3,5],
+            [5,4,6,7,8],
+            [6,5,7,8],
+            [7,5,6,8],
+            [8,5,6,7]
+        ]
+        expectedGraph = [
+            [1,2,3,5],
+            [2,1,3,5],
+            [3,1,2,5],
+            [5,6,7,8,1,2,3],
+            [6,5,7,8],
+            [7,5,6,8],
+            [8,5,6,7]
+        ]
+        forceValues = [4,1]
+        self.assertEqual(collapseRandomEdge(initialGraph,0,forceValues),expectedGraph)
 
 suite = unittest.TestLoader().loadTestsFromModule (TestMinCut())
 unittest.TextTestRunner().run(suite)
 
+
+# graph = getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt')
+# print(graph)
 
