@@ -29,7 +29,7 @@ Returns:
 def randomContraction(graph,seed=0):
 
     if (len(graph) == 2): # base case
-        return getNumCrossing(graph)
+        return [getNumCrossing(graph),[graph[0][0],graph[1][0]]]
     else: # remove random edge and collapse
         newGraph = collapseRandomEdge(graph,seed)
         return randomContraction(newGraph,seed)
@@ -93,7 +93,6 @@ Args:
 
 Returns:
     graph: (list) The graph representation
-    minCuts: (int or null) The expected number of mincuts (if applicable)
 
 """
 def getGraphFromAdjacencyList(adjacencyListLocation):
@@ -104,7 +103,6 @@ def getGraphFromAdjacencyList(adjacencyListLocation):
     
     # Check for initial row with expected minCuts
     if (graph[0][0] == '#'):
-        minCuts = graph[0][1]
         graph.pop(0)
     else:
         minCuts = null
@@ -114,23 +112,29 @@ def getGraphFromAdjacencyList(adjacencyListLocation):
         for item,j in row:
             graph[i][j] = int(graph[i][j])
  
-    return [graph,minCuts]
+    return graph
 
 # graph = getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt')
 # print(graph)
 
-class getMinCut(unittest.TestCase):
+class TestMinCut(unittest.TestCase):
   
-  def testGetGraphFromAdjacencyList(self):
-    expectedGraph = {
-        vertices: [1,2,3,4,5,6,7,8],
-        edges: [[]]
-    }
+  def test(self):
+    expectedGraph = [
+        [[1],[2],[3],[4]],
+        [[2],[1],[3],[4]],
+        [[3],[1],[2],[4]],
+        [[4],[1],[2],[3],[5]],
+        [[5],[4],[6],[7],[8]],
+        [[6],[5],[7],[8]],
+        [[7],[5],[6],[8]],
+        [[8],[5],[6],[7]]
+    ]
     expectedMinCuts = 1
-    self.assertEqual(getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt'),[expectedGraph,expectedMinCuts])
+    self.assertEqual(getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt'),expectedGraph)
 
-theTest = getMinCut()
-theTest.testGetGraphFromAdjacencyList()
+theTest = TestMinCut()
+theTest.test()
 
 
 
