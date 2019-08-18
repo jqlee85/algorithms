@@ -14,127 +14,8 @@
 import unittest
 import random
 import sys
+import copy
 
-"""
-Performs a uniformly random contraction algorithm to get a final cut represented by 2 vertices
-
-Args:
-    graph: (list) An undirected graph representation, a list of lists, with the first element of each being the vertex, and the subsequent elements being references to the vertexes to which the vertex is connected
-    seed: (int) The random seed used for selecting edges to collapse
-
-Returns:
-    finalCut: (list) of the final 2 vertices, ex: [1,3]
-
-"""
-def randomContraction(graph,seed=0):
-
-    if (len(graph) == 2): # base case
-        return [getNumCrossing(graph),[graph[0][0],graph[1][0]]]
-    else: # remove random edge and collapse
-        newGraph = collapseRandomEdge(graph,seed)
-        return randomContraction(newGraph,seed)
-    
-"""
-Performs a uniformly random contraction algorithm to get a final cut represented by 2 vertices
-
-Args:
-    collapsedGraph: (list) An undirected graph representation of a collapsed graph with two nodes
-
-Returns:
-    (int) The number of crossing edges of a 2 node graph
-
-"""
-def getNumCrossing(collapsedGraph):
-    return len(collapsedGraph[0]) - 1
-
-"""
-Selects a random edge from a graph, and collapses the two nodes into one remaining node
-
-Args:
-    graph: (list) An undirected graph representation, a list of lists, with the first element of each being the vertex, and the subsequent elements being references to the vertexes to which the vertex is connected
-    seed: (int) The random seed used for selecting edges to collapse
-    forceValues: (list) A list of two ints to be used to override random values when selecting and edge (only used for testing)
-
-Returns:
-    graph: (list) The resulting graph after the edge has been collapsed
-
-"""
-def collapseRandomEdge(graph,seed=0,forceValues=False):
-    
-    # Get random edge by randomly selecting a nodes, then randomly selecting a connected nodes from that list
-    # Note: This isn't actually uniformly random, bc when picking the first node, a node with 1 edge is just as likely to be selected as a node with many edges
-    # Thus, some edges are more likely than others to be selected by this method
-    # TODO: Fix this to utilize weighted sampling of the first node
-    random.seed(seed)
-    nodeAIndex = random.randrange(0,len(graph))
-    randomNodeIndexB = random.randrange(1,len(graph[nodeAIndex]))
-    
-    # Force Values for testing
-    if (forceValues):
-        nodeAIndex = forceValues[0]
-        randomNodeIndexB = forceValues[1]
-    vertexB = graph[nodeAIndex][randomNodeIndexB]
-    nodeBIndex = getNodeIndex(graph,vertexB)
-    nodeB = graph[nodeBIndex] 
-
-    #----- BEGIN Fuse two nodes into single node -----#
-    removedNode = graph.pop(nodeBIndex)
-    if (nodeBIndex < nodeAIndex):
-        nodeAIndex -= 1
-    nodeA = graph[nodeAIndex]
-    vertexA = nodeA[0]
-    
-    # Remove reference to deleted node in nodeA
-    nodeA.remove(vertexB)
-    
-    # Loop through edges in removedNode and add to nodeA, while changing references in the connected nodes (nodeC) to point to nodeA
-    i = 1
-    while i < len(removedNode):
-        # Get other end of edge from removed node
-        vertexC = removedNode[i]
-        nodeC = graph[getNodeIndex(graph,vertexC)]
-        # Add vertexes to nodeA
-        if (vertexC not in nodeA):
-            nodeA.append(vertexC)
-        # Remove reference to deleted node in nodeC
-        if (vertexB in nodeC):
-            nodeC.remove(vertexB)
-        # Add reference to remaining node in nodeC 
-        if (vertexA not in nodeC):
-            nodeC.append(vertexA)
-        i += 1       
-     #----- /END Fuse two nodes into single node -----#
-    
-    return graph
-
-"""
-Runs the randomContraction algorithm on an undirected graph n^2 times and returns the minimum number of cuts found
-
-Args:
-    graph: (list) An undirected graph representation consisting of V (a list of vertices) and E (a list of edges) ex: {vertices: [1,2,3,4], edges: [[1,2],[1,4],[2,3],[3,4]]}
-
-Returns:
-    minCuts: (int) the minimum number of cuts found through all the iterations of the randomContraction algorithm
-
-"""
-def getMinCut(graph):
-
-    n = len(graph.vertices)
-    m = len(graph.edges)
-    numIterations = n ** 2
-    minCuts = m
-    minCut = None
-
-    i = 1
-    while (i <= numIterations):
-        [numCuts,finalCut] = randomContraction(graph,i)
-        if (numCuts < m):
-            minCuts = numCuts
-            minCut = finalCut
-        i += 1
-
-    return minCuts    
-    
 """
 Takes a text file of an adjacency list in columns and returns an undirected graph representation consisting of V (a list of vertices) and E (a list of edges) ex: {vertices: [1,2,3,4], edges: [[1,2],[1,4],[2,3],[3,4]]}
 
@@ -158,18 +39,117 @@ def getGraph(adjacencyListLocation):
         minCuts = None
     
     # Convert to ints
-    i = 0
-    while i < len(graph):
+    for i in range(0,len(graph)):
         row = graph[i]
-        j = 0
-        while j < len(row):
+        for j in range(0,len(row)):
             graph[i][j] = int(graph[i][j])
-            j += 1
-        i += 1
  
     return graph
 
+"""
+Runs the randomContraction algorithm on an undirected graph n^2 times and returns the minimum number of cuts found
 
+Args:
+    graph: (list) An undirected graph representation consisting of V (a list of vertices) and E (a list of edges) ex: {vertices: [1,2,3,4], edges: [[1,2],[1,4],[2,3],[3,4]]}
+    numIterations: (int) The number of times to run the random contraction algorithm before returning the min cut
+
+Returns:
+    minCuts: (int) the minimum number of cuts found through all the iterations of the randomContraction algorithm
+
+"""
+def getMinCut(graph,numIterations=100):
+    minCuts = 'init'
+    i = 0
+    while (i < numIterations):
+        seed = i+4
+        graphCopy = copy.deepcopy(graph)
+        finalGraph = randomContraction(graphCopy,seed)
+        numCuts = getNumCrossing(finalGraph)
+        if (numCuts < minCuts or minCuts == 'init'):
+            minCuts = numCuts
+        i += 1
+    return minCuts    
+
+"""
+Performs a uniformly random contraction algorithm to get a final cut represented by 2 vertices
+
+Args:
+    graph: (list) An undirected graph representation, a list of lists, with the first element of each being the vertex, and the subsequent elements being references to the vertexes to which the vertex is connected
+    seed: (int) The random seed used for selecting edges to collapse
+
+Returns:
+    finalCut: (list) of the final 2 vertices, ex: [1,3]
+
+"""
+def randomContraction(graph,seed=0):
+    if (len(graph) == 2): # base case
+        return graph
+    else: # remove random edge and collapse
+        return randomContraction(collapseRandomEdge(graph,seed),seed)
+    
+"""
+Selects a random edge from a graph, and collapses the two nodes into one remaining node
+
+Args:
+    oldGraph: (list) An undirected graph representation, a list of lists, with the first element of each being the vertex, and the subsequent elements being references to the vertexes to which the vertex is connected
+    seed: (int) The random seed used for selecting edges to collapse
+    forceValues: (list) A list of two ints to be used to override random values when selecting and edge (only used for testing)
+
+Returns:
+    graph: (list) The resulting graph after the edge has been collapsed
+
+"""
+def collapseRandomEdge(graph,seed=0,forceValues=False):
+    
+    # Get random edge by randomly selecting a nodes, then randomly selecting a connected nodes from that list
+    # Note: This isn't actually uniformly random, bc when picking the first node, a node with 1 edge is just as likely to be selected as a node with many edges
+    # Thus, some edges are more likely than others to be selected by this method
+    # TODO: Fix this to utilize weighted sampling of the first node
+    random.seed(seed)
+    
+    # Node A
+    nodeAIndex = random.randrange(0,len(graph))
+    # Force Values (for testing)
+    if (forceValues):
+        nodeAIndex = forceValues[0]
+    vertexA = graph[nodeAIndex][0]
+    
+    # Node B
+    randomNodeIndexB = random.randrange(1,len(graph[nodeAIndex]))
+    # Force Values (for testing)
+    if (forceValues):
+         randomNodeIndexB = forceValues[1]
+    vertexB = graph[nodeAIndex][randomNodeIndexB]
+    nodeBIndex = getNodeIndex(graph,vertexB)
+    nodeB = graph[nodeBIndex] 
+
+    #----- BEGIN Fuse A and B into single node by removing B -----#
+    removedNode = graph.pop(nodeBIndex)
+   
+    newNodeAIndex = getNodeIndex(graph,vertexA)
+    nodeA = graph[newNodeAIndex]
+
+    # Remove reference to deleted node in nodeA
+    if (vertexB in nodeA):
+        while vertexB in nodeA: nodeA.remove(vertexB)
+    
+    # Loop through edges in removedNode and add to nodeA, while changing references in the connected nodes (nodeC) to point to nodeA
+    i = 1
+    while i < len(removedNode):
+        # Get other end of edge from removed node
+        vertexC = removedNode[i]
+        if (vertexC != vertexA):
+            nodeC = graph[getNodeIndex(graph,vertexC)]
+            # Remove reference to deleted node in nodeC
+            if (vertexB in nodeC):
+                while vertexB in nodeC: nodeC.remove(vertexB)
+            # Add vertex to nodeA
+            nodeA.append(vertexC)
+            # Add reference to remaining node in nodeC 
+            nodeC.append(vertexA)
+        i += 1       
+     #----- /END Fuse two nodes into single node -----#
+    return graph
 
 """
 Gets index of the given vertex given in the graph adjacency list representation
@@ -185,9 +165,33 @@ def getNodeIndex(graph,vertexToFind):
     for i in range(0,len(graph)):
         if (graph[i][0] == vertexToFind):
             return i
-    return None
+    return False
+
+"""
+Performs a uniformly random contraction algorithm to get a final cut represented by 2 vertices
+
+Args:
+    collapsedGraph: (list) An undirected graph representation of a collapsed graph with two nodes
+
+Returns:
+    (int) The number of crossing edges of a 2 node graph
+
+"""
+def getNumCrossing(collapsedGraph):
+    # print ('=>',collapsedGraph)
+    return len(collapsedGraph[0]) - 1
 
 
+"""
+Performs a uniformly random contraction algorithm to get a final cut represented by 2 vertices
+
+Args:
+    collapsedGraph: (list) An undirected graph representation of a collapsed graph with two nodes
+
+Returns:
+    (int) The number of crossing edges of a 2 node graph
+
+"""
 class TestMinCut(unittest.TestCase):
   
     def runTest(self):
@@ -210,7 +214,7 @@ class TestMinCut(unittest.TestCase):
             [2,5,2]
         ]
         self.assertEqual(getNodeIndex(graphInput,7),2)
-        self.assertEqual(getNodeIndex(graphInput,9),None)
+        self.assertEqual(getNodeIndex(graphInput,9),False)
 
     def testGetGraph(self):
         expectedGraph = [
@@ -248,11 +252,22 @@ class TestMinCut(unittest.TestCase):
         ]
         forceValues = [4,1]
         self.assertEqual(collapseRandomEdge(initialGraph,0,forceValues),expectedGraph)
-
+        
+# Run Tests
 suite = unittest.TestLoader().loadTestsFromModule (TestMinCut())
 unittest.TextTestRunner().run(suite)
 
+# Test Case 1
+# adjacencyList = getGraph('./ex4testcases/ex4test1.txt')
+# minCut = getMinCut(adjacencyList)
+# print('MINIMUM CUT =>'+str(minCut))
 
-# graph = getGraphFromAdjacencyList('./ex4testcases/ex4test1.txt')
-# print(graph)
+# Test Case 2
+# graph = getGraph('./ex4testcases/ex4test_16_50.txt')
+# minCut = getMinCut(graph)
+# print('MINIMUM CUT =>'+str(minCut))
 
+# Assignment Input
+graph = getGraph('./ex4input.txt')
+minCut = getMinCut(graph)
+print('MINIMUM CUT =>'+str(minCut))
