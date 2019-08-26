@@ -39,81 +39,57 @@ def computeSCCs(G,numSCCs=5):
 
     #2 Run DFS Loop on GRev - Goal: to compute magical ordering of nodes
     ## Let f(v) = "finishing time" for each v in V
-    n = G.numNodes
-    # DFSLoop1(G,n)
+    DFSLoop1(G)
 
     #3 Run DFS Loop on G - Goal: Discover the SCCs one by one 
     ## Processing nodes in decreasing order of finishing times
     ## SCCs equal nodes with the same "leader" 
 
+
     return None
 
 # First dfs loop performed on reversed graph
-def DFSLoop1(G,n):
+def DFSLoop1(G):
 
-    t = 0 # num of nodes processed so far
-    s = [None] #current source vertex, should be 1 indexed
-    
-    explored = [None] * n # OBO (0 indexed)
-    leaders = [None] * n # Values refer to node labels (1 indexed)
-    finishingTimes = [None] * n
-    
-    for i in reversed(range(1,n+1)):
+    # Loop from n down to 1
+    for i in reversed(range(1,G.numNodes+1)):
         
-        if (not explored[i-1]):
-            s[0] = i # source vertex (value refers to node labels, 1 indexed)
+        if (not G.isExplored(i)):
+            G.setCurrentSource(i)
             # Call DFS 
-            DFS(G,i,explored,leaders,finishingTimes,s)
+            DFS(G,i)
 
-    print('Explored',explored)
-    print('leaders',leaders)
-    print('finishingTimes',finishingTimes)
+    print('G.f',G.finishingTimes)
+
+    
     
 # Depth First Search
-def DFS(G,i,explored,leaders,finishingTimes,s):
-    node = G[i]
-    explored[i] = True
-    leaders[i] = s[0]
+def DFS(G,i):
+    node = G.getNode(i)
+    G.setExplored(i)
+    G.setLeader(i,G.currentSource)
     #for each arc (i,j) in G
-    for arc in G:
-        j = arc[1]
-        print('check',j)
-        print('explored',explored)
+    for j in range(1,G.numNodes+1):
+        # print('check',j)
+        # print('explored',j)
         # if j not yet explored
-        if ( not explored[j-1]):
+        if ( not G.isExplored(j)):
             print('j not explored, call DFS',j)
-            DFS(G,j,explored,leaders,finishingTimes,s)
-
-    t += 1
-    finishingTimes[i-1] = t
+            DFS(G,j)
+    G.incNumNodesProcessed()
+    print('setFinish for '+str(i)+' to '+str(G.numNodesProcessed))
+    G.setFinishingTime(i,G.numNodesProcessed)
  
 
 
 
 """
-Takes a text file list of edges and converts it to an array
+Graph Class 
 
 Args:
-    graph: (string) The location of the .txt file containing edges
-
-Returns:
-    graph: (list) The graph representation
+    graph: (string) The location of the .txt file containing list of edges
 
 """
-def getGraph(listLocation):
-
-    # Read in data from txt file
-    text_file = open(listLocation, "rt")
-    graph = [[item for item in line.split()] for line in text_file.readlines()]
-    
-    # Convert to ints
-    for i in range(0,len(graph)):
-        row = graph[i]
-        for j in range(0,len(row)):
-            graph[i][j] = int(graph[i][j])
- 
-    return graph
-
 # Graph Class, takes in list of edges, and converts to an adjacency list
 class Graph:
 
@@ -121,10 +97,13 @@ class Graph:
     nodes = None # Adjacency list
     numNodes = 0
     numEdges = 0
+    numNodesProcessed = 0
     reverse = False
     explored = None
     leaders = None
+    finishingTimes = None
     currentSource = None
+    
 
     def __init__(self, listLocation):
         
@@ -157,7 +136,9 @@ class Graph:
         # Initialize adjacency list
         self.nodes = [[x+1] for x in range(0,numNodes)]
         self.leaders = [[] for x in range(0,numNodes)]
-        self.explored = [[] for x in range(0,numNodes)]
+        self.explored = [False for x in range(0,numNodes)]
+        self.finishingTimes = [[] for x in range(0,numNodes)]
+        self.finishingTimeIndex = [[] for x in range(0,numNodes)]
 
 
         # Populate adj list
@@ -166,40 +147,62 @@ class Graph:
                 self.nodes[i[0]-1].append(i[1])
             if (i[0] not in self.nodes[i[1]-1]):
                 self.nodes[i[1]-1].append(i[0])
-             
+    # END __init__
+    
+    def getNode(self,nodeId):
+        return self.nodes[nodeId-1]
 
-    def getLeader(nodeNumber):
-        return self.leaders[nodeNumber - 1]
+    def getLeader(self,nodeId):
+        return self.leaders[nodeId - 1]
 
-    def setLeader(nodeNumber):
-        self.leaders[nodeNumber-1] - nodeNumber
+    def setLeader(self,nodeId,leaderNodeId):
+        self.leaders[nodeId-1] = leaderNodeId
 
-    def isExplored(nodeNumber):
-        return self.explored[nodeNumber - 1]
+    def resetLeaders(self):
+        self.leaders = [None for x in range(0,self.numNodes)]
 
-    def setExplored(nodeNumber):
-        self.explored[nodeNumber-1] = True
+    def isExplored(self,nodeId):
+        return self.explored[nodeId - 1]
 
-    def setCurrentNode(nodeNumber):
-        self.currentSource = nodeNumber
+    def setExplored(self,nodeId):
+        self.explored[nodeId-1] = True
+    
+    def resetExplored(self):
+        self.explored = [False for x in range(0,self.numNodes)]
 
-    def reverseGraph():
+    def getFinishingTime(self,nodeId):
+        return self.finishingTimes[nodeId - 1]
+
+    def setFinishingTime(self,nodeId,finishingTime):
+        self.finishingTimes[nodeId-1] = finishingTime
+        self.finishingTimeIndex[finishingTime-1] = nodeId
+
+    def getNodeByFinishTime(self,finishingTime):
+        nodeId = self.finishingTimeIndex[finishingTime-1]
+        return self.getNode(nodeId)
+
+    def resetFinishingTimes(self):
+        self.finishingTimes = [None for x in range(0,self.numNodes)]  
+
+    def setCurrentSource(self,nodeId):
+        self.currentSource = nodeId
+
+    def resetCurrentSource(self):
+        self.currentSource = None
+    
+    def incNumNodesProcessed(self):
+        self.numNodesProcessed += 1
+
+    def resetNumNodesProcessed(self):
+        self.numNodesProcessed = 0
+    
+    def reverseGraph(self,):
         self.reverse = True
         print('not implemented reverseGraph')
 
-    def unReverseGraph():
+    def unReverseGraph(self):
         self.reverse = False
         print('not implemented unReverseGraph')
-    
-    def resetExplored():
-        self.explored = [[] for x in range(0,self.numNodes)]
-
-    def resetLeaders():
-        self.leaders = [[] for x in range(0,self.numNodes)]
-            
-    def resetCurrentSource():
-        self.currentSource = None
-    
     
 
 class TestMinCut(unittest.TestCase):
@@ -209,22 +212,22 @@ class TestMinCut(unittest.TestCase):
         testGetNumNodes (self)
 
     def testGetGraph(self):
-        expectedGraph = [
-            [1,12],
-            [2,3],
-            [3,1],
-            [5,7],
-            [7,10],
-            [8,16],
-            [10,15],
-            [11,14],
-            [12,8],
-            [13,2],
-            [14,5],
-            [15,13],
-            [16,11]
-        ]
-        self.assertEqual(getGraph('./ex1testdata/input_mostlyCycles_8_16.txt'),expectedGraph)
+        adjacencyList = [[1, 12, 3], [2, 3, 13], [3, 2, 1], [4], [5, 7, 14], [6], [7, 5, 10], [8, 16, 12], [9], [10, 7, 15], [11, 14, 16], [12, 1, 8], [13, 2, 15], [14, 11, 5], [15, 10, 13], [16, 8, 11]]
+        G = Graph('./ex1testdata/input_mostlyCycles_8_16.txt')
+    
+        self.assertEqual(G.nodes,adjacencyList)
+
+        G.setFinishingTime(2,5)
+        G.setFinishingTime(1,9)
+        G.setFinishingTime(10,4)
+        self.assertEqual(G.getNodeByFinishTime(5),[2,3,13])
+        self.assertEqual(G.getFinishingTime(10),4)
+        
+        G.setExplored(4)
+        self.assertEqual(G.isExplored(4),True)
+        self.assertEqual(G.isExplored(3),False)
+        G.resetExplored()
+        self.assertEqual(G.isExplored(4),False)
         
 thread = threading.Thread(target=main)
 thread.start()
