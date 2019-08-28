@@ -34,6 +34,8 @@ Returns:
 """
 def computeSCCs(G,numSCCs=5):
 
+    print ('G.nodes',G.nodes)
+    print ('G.reverseNodes',G.reverseNodes)
     
     #1 Reverse G to get Grev
 
@@ -43,14 +45,17 @@ def computeSCCs(G,numSCCs=5):
 
     #3 Run DFS Loop on G - Goal: Discover the SCCs one by one 
     ## Processing nodes in decreasing order of finishing times
+    DFSLoop2(G)
+    
     ## SCCs equal nodes with the same "leader" 
-
+    print G.leaders
 
     return None
 
 # First dfs loop performed on reversed graph
 def DFSLoop1(G):
-
+    G.reverseGraph()
+    
     # Loop from n down to 1
     for i in reversed(range(1,G.numNodes+1)):
         
@@ -59,9 +64,21 @@ def DFSLoop1(G):
             # Call DFS 
             DFS(G,i)
 
-    print('G.f',G.finishingTimes)
+    print('G.finishingTimes',G.finishingTimes)
 
+# Second dfs loop performed on forward graph
+def DFSLoop2(G):
+    G.unReverseGraph()
     
+    # Loop from n down to 1
+    for i in reversed(range(1,G.numNodes+1)):
+        nodeId = G.finishingTimes[i-1]
+        if (not G.isExplored(nodeId)):
+            G.setCurrentSource(nodeId)
+            # Call DFS 
+            DFS(G,nodeId)
+
+    print('G.finishingTimes',G.finishingTimes)
     
 # Depth First Search
 def DFS(G,i):
@@ -69,13 +86,13 @@ def DFS(G,i):
     G.setExplored(i)
     G.setLeader(i,G.currentSource)
     #for each arc (i,j) in G
-    for j in range(1,G.numNodes+1):
-        # print('check',j)
-        # print('explored',j)
-        # if j not yet explored
-        if ( not G.isExplored(j)):
-            print('j not explored, call DFS',j)
-            DFS(G,j)
+    outgoingEdges = G.getOutgoingEdges(i)
+    for j in range(0,len(outgoingEdges)):
+        nextNode = outgoingEdges[j]
+        # if next node not yet explored
+        if ( not G.isExplored(nextNode)):
+            print('j not explored, call DFS',nextNode)
+            DFS(G,nextNode)
     G.incNumNodesProcessed()
     print('setFinish for '+str(i)+' to '+str(G.numNodesProcessed))
     G.setFinishingTime(i,G.numNodesProcessed)
@@ -95,6 +112,7 @@ class Graph:
 
     edges = None
     nodes = None # Adjacency list
+    reverseNodes = None
     numNodes = 0
     numEdges = 0
     numNodesProcessed = 0
@@ -135,6 +153,7 @@ class Graph:
         
         # Initialize adjacency list
         self.nodes = [[x+1] for x in range(0,numNodes)]
+        self.reverseNodes = [[x+1] for x in range(0,numNodes)]
         self.leaders = [[] for x in range(0,numNodes)]
         self.explored = [False for x in range(0,numNodes)]
         self.finishingTimes = [[] for x in range(0,numNodes)]
@@ -143,14 +162,21 @@ class Graph:
 
         # Populate adj list
         for i in self.edges:
+            # Forward List
             if (i[1] not in self.nodes[i[0]-1]):
                 self.nodes[i[0]-1].append(i[1])
-            if (i[0] not in self.nodes[i[1]-1]):
-                self.nodes[i[1]-1].append(i[0])
+            # if (i[0] not in self.nodes[i[1]-1]):
+                # self.nodes[i[1]-1].append(i[0])
+            # Reverse List
+            if (i[0] not in self.reverseNodes[i[1]-1]):
+                self.reverseNodes[i[1]-1].append(i[0])
+            # if (i[1] not in self.reverseNodes[i[1]-1]):
+                # self.reverseNodes[i[1]-1].append(i[1])   
     # END __init__
     
     def getNode(self,nodeId):
-        return self.nodes[nodeId-1]
+        if self.reverse: return self.reverseNodes[nodeId-1]
+        else: return self.nodes[nodeId-1]
 
     def getLeader(self,nodeId):
         return self.leaders[nodeId - 1]
@@ -198,11 +224,12 @@ class Graph:
     
     def reverseGraph(self,):
         self.reverse = True
-        print('not implemented reverseGraph')
 
     def unReverseGraph(self):
         self.reverse = False
-        print('not implemented unReverseGraph')
+
+    def getOutgoingEdges(self,nodeId):
+        return self.getNode(nodeId)[1:]
     
 
 class TestMinCut(unittest.TestCase):
