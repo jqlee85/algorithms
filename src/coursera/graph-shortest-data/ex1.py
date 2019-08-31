@@ -14,12 +14,12 @@ def main():
     unittest.TextTestRunner().run(suite)
 
     # Get Graph
-    # G = Graph(graphPath)
+    G = Graph(graphPath)
 
-    # # print(G.nodes)
-    # # print(G.explored)
-    # # Compute SCCs
-    # return computeSCCs(G)
+    # print(G.nodes)
+    # print(G.explored)
+    # Compute SCCs
+    return computeSCCs(G)
 
 """
 Takes a graph represented as an list of directed edges, ie: [[1,2],[1,3],[2,4],[3,4]] and computes the n largest SCCs and returns their sizes in descending order
@@ -34,35 +34,27 @@ Returns:
 """
 def computeSCCs(G,numSCCs=5):
 
-    # print ('G.nodes',G.nodes)
-    # print ('G.reverseNodes',G.reverseNodes)
-    
-    #1 Reverse G to get Grev
-
-    #2 Run DFS Loop on GRev - Goal: to compute magical ordering of nodes
-    ## Let f(v) = "finishing time" for each v in V
+    #Initial DFS loop on reversed Graph
     DFSLoop1(G)
 
+    # Reset values for second loop
     G.resetExplored()
     G.unReverseGraph()
     G.resetCurrentSource()
     G.resetNumNodesProcessed()
 
 
-    #3 Run DFS Loop on G - Goal: Discover the SCCs one by one 
-    ## Processing nodes in decreasing order of finishing times
+    # Second DFS loop on forward graph to compute SCCs
+    # Processing nodes in decreasing order of finishing times
     DFSLoop2(G)
     
     
     ## SCCs equal nodes with the same "leader" 
+    print '======Leaders====='
     # print G.leaders
-    print 'Leaders'
-    print G.leaders
     print G.getTopLeaders(5)
     
-    
-
-    return None
+    return G.getTopLeaders(5)
 
 # First dfs loop performed on reversed graph
 def DFSLoop1(G):
@@ -80,12 +72,21 @@ def DFSLoop1(G):
 
 # Second dfs loop performed on forward graph
 def DFSLoop2(G):
-    
+    # print(G.finishi)
     # Loop from n down to 1
+    # print('===finishingtimeindex===')
+    # print(G.finishingTimeIndex)
+    # print('===finishingtimes===')
+    # print(G.finishingTimes)
     for i in reversed(range(1,G.numNodes+1)):
-        nodeId = G.finishingTimes[i-1]
+        # print('Finishing Time = '+str(i))
+        node = G.getNodeByFinishTime(i)
+        nodeId = node[0]
+        # print ('nodeId=',nodeId)
         if (not G.isExplored(nodeId)):
+            # print('NOT EXPLORED '+str(nodeId))
             G.setCurrentSource(nodeId)
+            # print('current source = ',str(nodeId))
             # Call DFS 
             DFS(G,nodeId,2)
 
@@ -93,25 +94,29 @@ def DFSLoop2(G):
     
 # Depth First Search
 def DFS(G,i,run):
-    
+   
     node = G.getNode(i)
     G.setExplored(i)
     if run == 2: 
         G.setLeader(i,G.currentSource)
+        # print('-------DFS =>'+str(i)+'---------')
+        # print('node=',node)
+        # print('set leader '+str(i)+'=>'+str(G.currentSource))
     #for each arc (i,j) in G
     outgoingEdges = G.getOutgoingEdges(i)
+    # if run == 2: 
+        # print('outgoing edges from '+str(i),outgoingEdges)
     for j in range(0,len(outgoingEdges)):
         nextNode = outgoingEdges[j]
         # if next node not yet explored
         if ( not G.isExplored(nextNode)):
             # print('j not explored, call DFS',nextNode)
             DFS(G,nextNode,run)
-    G.incNumNodesProcessed()
     # print('setFinish for '+str(i)+' to '+str(G.numNodesProcessed))
-    G.setFinishingTime(i,G.numNodesProcessed)
+    if (run == 1): 
+        G.incNumNodesProcessed()
+        G.setFinishingTime(i,G.numNodesProcessed)
  
-
-
 
 """
 Graph Class 
@@ -223,7 +228,8 @@ class Graph:
         return self.getNode(nodeId)
 
     def resetFinishingTimes(self):
-        self.finishingTimes = [None for x in range(0,self.numNodes)]  
+        self.finishingTimes = [None for x in range(0,self.numNodes)]
+        self.finishingTimeIndex = [None for x in range(0,self.numNodes)]
 
     def setCurrentSource(self,nodeId):
         self.currentSource = nodeId
@@ -260,14 +266,14 @@ class TestMinCut(unittest.TestCase):
         testGetNumNodes (self)
 
     def testGetGraph(self):
-        adjacencyList = [[1,4],[2,8],[3,6],[4,7],[5,2],[6,9],[7,1],[8,5,6],[9,3,7]]
+       
+        # Test graph parsing
         G = Graph('./ex1testdata/classExample.txt')
+        self.assertEqual(G.nodes,[[1,4],[2,8],[3,6],[4,7],[5,2],[6,9],[7,1],[8,5,6],[9,3,7]])
 
-        self.assertEqual(G.nodes,adjacencyList)
-
+        # Test finishing time and explored
         G.setFinishingTime(1,7)
-        G.setFinishingTime(9,6)
-        
+        G.setFinishingTime(9,6) 
         self.assertEqual(G.getNodeByFinishTime(7),[1,4])
         self.assertEqual(G.getFinishingTime(9),6)
         G.setExplored(4)
@@ -276,16 +282,14 @@ class TestMinCut(unittest.TestCase):
         G.resetExplored()
         self.assertEqual(G.isExplored(4),False)
         
-        # Reset test values set
+        # Reset values 
         G.resetExplored()
         G.resetFinishingTimes()
         
         # First Loop and tests
         DFSLoop1(G)
-        reverseNodes = [[1,7],[2,5],[3,9],[4,1],[5,8],[6,3,8],[7,4,9],[8,2],[9,6]]
-        self.assertEqual(G.reverseNodes,reverseNodes)
-        finishingTimes = [7,3,1,8,2,5,9,4,6]
-        self.assertEqual(G.finishingTimes,finishingTimes)
+        self.assertEqual(G.reverseNodes,[[1,7],[2,5],[3,9],[4,1],[5,8],[6,3,8],[7,4,9],[8,2],[9,6]])
+        self.assertEqual(G.finishingTimes,[7,3,1,8,2,5,9,4,6])
         
         # Prepare for 2nd loop
         G.resetExplored()
@@ -295,13 +299,11 @@ class TestMinCut(unittest.TestCase):
 
         # Second loop and tests
         DFSLoop2(G)
-        print 'Leaders'
-        print G.leaders
-        print G.getTopLeaders(3)
+        self.assertEqual(G.leaders,[7, 8, 9, 7, 8, 9, 7, 8, 9])
+        self.assertEqual(G.getTopLeaders(3),[3,3,3])
+        
 
 thread = threading.Thread(target=main)
 thread.start()
 
-
-# Wrong answers
-# 600497, 117573, 318, 203, 181
+# Correct answers: [4****1, 9*8, 4*9, 3*3, 2*1]
