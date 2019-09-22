@@ -18,24 +18,44 @@ def main():
     # Get Graph
     G = Graph(graphPath)
 
+    # Calculate Shortest Paths
+    shortestPaths = getShortestPaths(G)
 
+
+def getShortestPaths(graph):
+
+    print('getShortestPaths')
+
+    # Initialize processed vertices
+    X = [1]
+
+    # Computed shortest path distances
+    A = [0]
+
+    # Computes shortest paths (optional)
+    B = [[1]]
+
+    # Create heap??? 
+
+    # Main while loop
+    while(len(X) < graph.numNodes):
+
+        # Among all edges (v,w) with v in X and head in V-X, pick the edge that minimizes A[v] + length(vw)
+        # Call edge (v*,w*)
+        # This should be pulling the minimum from the heap
+
+        # Add w* to X
+
+        # Set A[w*] to A[v*] + length(v*,w*)
+
+        # Set B[w*] to B[v*] u(v*,w*)  [ adding the edge to the previous path]
 
 
 # Graph Class, takes in list of edges, and converts to an adjacency list
 class Graph:
 
-    edges = None
-    nodes = None # Adjacency list
-    reverseNodes = None
     numNodes = 0
-    numEdges = 0
-    numNodesProcessed = 0
-    reverse = False
-    explored = None
-    leaders = None
-    topLeaders = None
-    finishingTimes = None
-    currentSource = None
+    
 
     def __init__(self, listLocation):
         
