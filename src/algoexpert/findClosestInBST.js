@@ -1,7 +1,7 @@
 // Average: O(logn) time | [recursive] O(logd) space (d = depth of BST) | [iterative] O(1) space
 // Worst: O(n) time | [recursive] O(n) space | [iterative] O(1) space
 
-// Recirsive Solution
+// Recursive Solution
 const findClosestValueInBst = (tree, target) => {
   
 	let smallestDifference = Infinity
@@ -15,23 +15,13 @@ const findClosestValueInBst = (tree, target) => {
 			smallestDifference = difference
 			closestNumber = node.value
 		}
-		// If difference is zero, return null													 
-		if (difference === 0)	return null																 
-		// Else check left and right nodes
-		else {
-			// Is value smaller than the target
-			let valueSmaller = node.value < target
-			// Recursively check left
-			if (node.left && !valueSmaller) checkNode(node.left) 
-			// Recursively check right
-			if (node.right && valueSmaller) checkNode(node.right)
-		}	
+		// Recursively check right
+		if (node.right && node.value < target) checkNode(node.right)
+		// Recursively check left
+		else if (node.left && node.value > target) checkNode(node.left) 
 	}
 	
 	checkNode(tree)
 	return closestNumber
 	
 }
-
-// Do not edit the line below.
-exports.findClosestValueInBst = findClosestValueInBst;
