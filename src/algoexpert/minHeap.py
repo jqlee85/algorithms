@@ -1,14 +1,13 @@
-# Do not edit the class below except for the buildHeap,
-# siftDown, siftUp, peek, remove, and insert methods.
-# Feel free to add new properties and methods to the class.
 import math
 
+# Minimum Heap Class
 class MinHeap:
-  def __init__(self, array):
-      # Do not edit the line below.
-      self.heap = self.buildHeap(array)
+  def __init__(self, array):  
+    self.heap = self.buildHeap(array)
+    self.dataType = 'int'
 
-  def buildHeap(self, array):
+  def buildHeap(self, array, dataType='int'):
+    self.dataType = dataType
     self.heap = array
     for i in reversed(range(len(array))):
       self.siftDown(i)
@@ -27,8 +26,10 @@ class MinHeap:
       smallerIdx = leftIdx
     # Compare to get smaller
     else: 
-      leftValue = self.heap[leftIdx] 
-      rightValue = self.heap[rightIdx]
+      if (self.dataType == 'djikstra'): leftValue = self.heap[leftIdx][1] 
+      else: leftValue = self.heap[leftIdx] 
+      if (self.dataType == 'djikstra'): rightValue = self.heap[rightIdx][1] 
+      else: rightValue = self.heap[rightIdx] 
       if (leftValue <= rightValue): smallerIdx = leftIdx
       else: smallerIdx = rightIdx  
     
@@ -40,7 +41,12 @@ class MinHeap:
 
   def siftUp(self,currentIdx):
     parentIdx = self.getParentIdx(currentIdx)
-    if (parentIdx >= 0 and self.heap[currentIdx] < self.heap[parentIdx]):
+    if (self.dataType == 'djikstra'): currentValue = self.heap[currentIdx][1] 
+    else: currentValue = self.heap[currentIdx] 
+    if (self.dataType == 'djikstra'): parentValue = self.heap[parentIdx][1] 
+    else: parentValue = self.heap[parentIdx] 
+    
+    if (parentIdx >= 0 and currentValue < parentValue):
       self.swap(currentIdx,parentIdx)
       self.siftUp(parentIdx)
 
@@ -49,11 +55,10 @@ class MinHeap:
 
   def remove(self):
     removed = self.heap[0]
-    lastValue = self.heap.pop()
-    self.heap[0] = lastValue
+    lastItem = self.heap.pop()
+    self.heap[0] = lastItem
     self.siftDown(0)
     return removed
-
 
   def insert(self, value):
     newIdx = len(self.heap)

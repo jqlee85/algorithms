@@ -15,6 +15,16 @@ test3.remove()
 test3.remove()
 test3.insert(87)
 
+test3a = MinHeap([[1,48], [1,12], [1,24], [1,7], [1,8], [1,-5], [1,24], [1,39], [1,24], [1,56], [1,2], [1,6], [1,8], [1,41]])
+test3a.insert([1,76])
+test3a.remove()
+test3a.remove()
+test3a.insert([1,9])
+test3a.insert([1,10])
+test3a.insert([1,87])
+test3a.insert([1,-87])
+test3a.insert([1,49])
+
 test4 = MinHeap([-4, 5, 10, 8, -10, -6, -4, -2, -5, 3, 5, -4, -5, -1, 1, 6, -7, -6, -7, 8])
 
 test5 = MinHeap([-7, 2, 3, 8, -10, 4, -6, -10, -2, -7, 10, 5, 2, 9, -9, -5, 3, 8])
@@ -46,78 +56,86 @@ test9.remove()
 
 class TestProgram(unittest.TestCase):
 
-	def test_case_1(self):
-		self.assertEqual(test1.heap[0] == min(test1.heap), True)
-		for currentIdx in range(len(test1.heap)):
-			parentIdx = (currentIdx - 1) // 2
-			if parentIdx < 0:
-				break
-			self.assertEqual(test1.heap[currentIdx] >= test1.heap[parentIdx], True)
+  def test_case_1(self):
+    self.assertEqual(test1.heap[0] == min(test1.heap), True)
+    for currentIdx in range(len(test1.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test1.heap[currentIdx] >= test1.heap[parentIdx], True)
 
-	def test_case_2(self):
-		self.assertEqual(test2.heap[0] == min(test2.heap), True)
-		for currentIdx in range(len(test2.heap)):
-			parentIdx = (currentIdx - 1) // 2
-			if parentIdx < 0:
-				break
-			self.assertEqual(test2.heap[currentIdx] >= test2.heap[parentIdx], True)
+  def test_case_2(self):
+    self.assertEqual(test2.heap[0] == min(test2.heap), True)
+    for currentIdx in range(len(test2.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test2.heap[currentIdx] >= test2.heap[parentIdx], True)
 
-	def test_case_3(self):
-		self.assertEqual(test3.heap[0] == min(test3.heap), True)
-		for currentIdx in range(len(test3.heap)):
-			parentIdx = (currentIdx - 1) // 2
-			if parentIdx < 0:
-				break
-			self.assertEqual(test3.heap[currentIdx] >= test3.heap[parentIdx], True)
+  def test_case_3(self):
+    self.assertEqual(test3.heap[0] == min(test3.heap), True)
+    for currentIdx in range(len(test3.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test3.heap[currentIdx] >= test3.heap[parentIdx], True)
 
-	def test_case_4(self):
-		self.assertEqual(test4.heap[0] == min(test4.heap), True)
-		for currentIdx in range(len(test4.heap)):
-			parentIdx = (currentIdx - 1) // 2
-			if parentIdx < 0:
-				break
-			self.assertEqual(test4.heap[currentIdx] >= test4.heap[parentIdx], True)
+  def test_case_4(self):
+    self.assertEqual(test4.heap[0] == min(test4.heap), True)
+    for currentIdx in range(len(test4.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test4.heap[currentIdx] >= test4.heap[parentIdx], True)
 
-	def test_case_5(self):
-		self.assertEqual(test5.heap[0] == min(test5.heap), True)
-		for currentIdx in range(len(test5.heap)):
-			parentIdx = (currentIdx - 1) // 2
-			if parentIdx < 0:
-				break
-			self.assertEqual(test5.heap[currentIdx] >= test5.heap[parentIdx], True)
+  def test_case_5(self):
+    self.assertEqual(test5.heap[0] == min(test5.heap), True)
+    for currentIdx in range(len(test5.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test5.heap[currentIdx] >= test5.heap[parentIdx], True)
 
-	def test_case_6(self):
-		self.assertEqual(test6.heap[0] == min(test6.heap), True)
-		for currentIdx in range(len(test6.heap)):
-			parentIdx = (currentIdx - 1) // 2
-			if parentIdx < 0:
-				break
-			self.assertEqual(test6.heap[currentIdx] >= test6.heap[parentIdx], True)
+  def test_case_6(self):
+    self.assertEqual(test6.heap[0] == min(test6.heap), True)
+    for currentIdx in range(len(test6.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test6.heap[currentIdx] >= test6.heap[parentIdx], True)
 
-	def test_case_7(self):
-		self.assertEqual(test7.heap[0] == min(test7.heap), True)
-		for currentIdx in range(len(test7.heap)):
-			parentIdx = (currentIdx - 1) // 2
-			if parentIdx < 0:
-				break
-			self.assertEqual(test7.heap[currentIdx] >= test7.heap[parentIdx], True)
+  def test_case_7(self):
+    self.assertEqual(test7.heap[0] == min(test7.heap), True)
+    for currentIdx in range(len(test7.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test7.heap[currentIdx] >= test7.heap[parentIdx], True)
 
-	def test_case_8(self):
-		self.assertEqual(test8.heap[0] == min(test8.heap), True)
-		for currentIdx in range(len(test8.heap)):
-			parentIdx = (currentIdx - 1) // 2
-			if parentIdx < 0:
-				break
-			self.assertEqual(test8.heap[currentIdx] >= test8.heap[parentIdx], True)
+  def test_case_8(self):
+    self.assertEqual(test8.heap[0] == min(test8.heap), True)
+    for currentIdx in range(len(test8.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test8.heap[currentIdx] >= test8.heap[parentIdx], True)
 
-	def test_case_9(self):
-		self.assertEqual(test9.heap[0] == min(test9.heap), True)
-		for currentIdx in range(len(test9.heap)):
-			parentIdx = (currentIdx - 1) // 2
-			if parentIdx < 0:
-				break
-			self.assertEqual(test9.heap[currentIdx] >= test9.heap[parentIdx], True)
+  def test_case_9(self):
+    self.assertEqual(test9.heap[0] == min(test9.heap), True)
+    for currentIdx in range(len(test9.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test9.heap[currentIdx] >= test9.heap[parentIdx], True)
 
+  def test_case_3a(self):
+    self.assertEqual(test3a.heap[0] == min(test3a.heap), True)
+    print(test3a.heap)
+    for currentIdx in range(len(test3a.heap)):
+      parentIdx = (currentIdx - 1) // 2
+      if parentIdx < 0:
+        break
+      self.assertEqual(test3a.heap[currentIdx][1] < test3a.heap[parentIdx][1], True)
 
 if __name__ == "__main__":
-	unittest.main()
+  unittest.main()

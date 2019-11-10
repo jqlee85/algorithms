@@ -38,7 +38,7 @@ def getShortestPaths(graph):
     # Create heap??? 
 
     # Main while loop
-    while(len(X) < graph.numNodes):
+    # while(len(X) < graph.numNodes):
 
         # Among all edges (v,w) with v in X and head in V-X, pick the edge that minimizes A[v] + length(vw)
         # Call edge (v*,w*)
